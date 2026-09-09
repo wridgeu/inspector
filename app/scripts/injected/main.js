@@ -6,6 +6,7 @@ sap.ui.require(['ToolsAPI'], function (ToolsAPI) {
     var controlUtils = require('../modules/injected/controlUtils.js');
     var rightClickHandler = require('../modules/injected/rightClickHandler.js');
     var applicationUtils = require('../modules/injected/applicationUtils');
+    var modelUtils = require('../modules/injected/modelUtils.js');
     var consoleErrorCapture = require('../modules/injected/consoleErrorCapture.js');
 
     var ui5TempName = 'ui5$temp';
@@ -111,7 +112,8 @@ sap.ui.require(['ToolsAPI'], function (ToolsAPI) {
                     action: 'on-receiving-initial-data',
                     applicationInformation: applicationUtils.getApplicationInfo(frameworkInformation),
                     controlTree: controlUtils.getControlTreeModel(controlTreeModel, frameworkInformation.commonInformation),
-                    elementRegistry: ToolsAPI.getRegisteredElements()
+                    elementRegistry: ToolsAPI.getRegisteredElements(),
+                    models: modelUtils.getModels()
                 });
             });
         },
@@ -199,6 +201,48 @@ sap.ui.require(['ToolsAPI'], function (ToolsAPI) {
                 controlBindings: controlUtils.getControlBindingsFormattedForDataView(controlBindings),
                 controlAggregations: controlUtils.getControlAggregationsFormattedForDataView(controlId, controlAggregations),
                 controlEvents: controlUtils.getControlEventsFormattedForDataView(controlId, controlEvents)
+            });
+        },
+
+        /**
+         * Scan the page for every model instance.
+         * @param {Object} event - carries the id of the selected model, if any
+         */
+        'do-models-refresh': function (event) {
+            message.send({
+                action: 'on-receiving-models',
+                models: modelUtils.getModels(event.detail.target)
+            });
+        },
+
+        /**
+         * Send data and metadata for one model.
+         * @param {Object} event
+         */
+        'do-model-select': function (event) {
+            var details = modelUtils.getModelDetails(event.detail.target);
+
+            message.send({
+                action: 'on-model-select',
+                modelMissing: details.missing === true,
+                modelInfo: modelUtils.getModelDetailsFormattedForDataView(details),
+                modelData: details.data,
+                modelMetadata: details.metadata
+            });
+        },
+
+        /**
+         * Send the contents below one truncation marker of the selected model.
+         * @param {Object} event
+         */
+        'do-model-expand': function (event) {
+            var expanded = modelUtils.expandModelData(event.detail.target, event.detail.deep);
+
+            message.send({
+                action: 'on-model-expand',
+                expandId: event.detail.target,
+                // Absent when the branch could not be read back.
+                expandValue: expanded.value
             });
         },
 
