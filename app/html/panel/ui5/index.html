@@ -17,6 +17,7 @@
                 <tab id="app-info-tab">Application Information</tab>
                 <tab id="odata-tab">OData Requests</tab>
                 <tab id="elements-registry-tab">Elements Registry</tab>
+                <tab id="models-tab">Models</tab>
                 <tab id="ai-tab">AI Assistant</tab>
             </tabs>
             <contents>
@@ -157,6 +158,43 @@
                     </splitter>
                 </content>
                 <!-- Elements registry /ends-->
+
+                <!-- Models /start-->
+                <content for="models-tab" class="modelsTab">
+                    <splitter id="models-splitter">
+                        <!-- SplitContainer left side /start-->
+                        <start>
+                            <models-master-view id="models-tab-master"/>
+                        </start>
+                        <!-- SplitContainer left side /ends-->
+
+                        <!-- SplitContainer right side /start-->
+                        <end>
+                            <!-- Models detail tabbar /start-->
+                            <tabbar id="models-tabbar">
+                                <tabs>
+                                    <tab id="models-tab-data" selected>Data</tab>
+                                    <tab id="models-tab-info">Info</tab>
+                                    <tab id="models-tab-metadata">Metadata</tab>
+                                </tabs>
+                                <contents>
+                                    <content for="models-tab-data">
+                                        <json-view id="models-data"></json-view>
+                                    </content>
+                                    <content for="models-tab-info">
+                                        <data-view id="models-info"></data-view>
+                                    </content>
+                                    <content for="models-tab-metadata">
+                                        <json-view id="models-metadata"></json-view>
+                                    </content>
+                                </contents>
+                            </tabbar>
+                            <!-- Models detail tabbar /end-->
+                        </end>
+                        <!-- SplitContainer right side /ends-->
+                    </splitter>
+                </content>
+                <!-- Models /ends-->
 
                 <!-- AI Chat /start-->
                 <content for="ai-tab">

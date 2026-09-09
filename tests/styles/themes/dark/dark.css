@@ -1270,6 +1270,112 @@ elements-registry-master-view:not([show-filtered-elements]) .selected ::selectio
 .elementsRegistry splitter {
   background-color: #000;
 }
+models-master-view {
+  display: flex;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+models-master-view #modelsContent {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  flex-wrap: nowrap;
+}
+models-master-view [is="ui-icon"] {
+  display: inline-block;
+  flex-shrink: 0;
+}
+models-master-view [is="ui-icon"].icon-mask {
+  background-color: #6e6e6e;
+  -webkit-mask-position: var(--spritesheet-position);
+}
+models-master-view [is="ui-icon"]:not(.icon-mask) {
+  background-position: var(--spritesheet-position);
+}
+models-master-view .spritesheet-largeicons.icon-mask {
+  -webkit-mask-image: url("/images/largeIcons.svg");
+}
+models-master-view .largeicon-refresh {
+  cursor: pointer;
+}
+models-master-view filter {
+  border-bottom: solid 1px #c0c0c0;
+  display: flex;
+  left: 0;
+  line-height: 1;
+  padding: 5px;
+  align-items: center;
+}
+models-master-view filter > start {
+  display: flex;
+  flex: 1 1 0;
+}
+models-master-view filter [type="search"] {
+  border: solid 1px #a3a3a3;
+  border-radius: 2px;
+  background-color: #1B1B1B;
+  color: #949494;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+models-master-view filter [type="checkbox"] {
+  margin-right: 2px;
+}
+models-master-view filter label {
+  display: flex;
+  line-height: 20px;
+  padding: 0 6px;
+  white-space: nowrap;
+  align-items: center;
+}
+models-master-view:not([show-filtered-elements]) .data-grid tr.revealed.matching {
+  background-color: rgba(98, 98, 98, 0.9);
+}
+.modelsTab {
+  flex-direction: column;
+  background-color: #252525;
+  color: #949494;
+}
+.modelsTab splitter {
+  background-color: #000;
+}
+.modelsTab .data-grid:focus:not(:focus-visible) {
+  outline: none;
+}
+.modelsTab td.owner-column {
+  cursor: pointer;
+}
+.modelsTab #modelsContent .data-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.modelsTab .jsonEditor,
+.modelsTab .editorAlt {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: auto;
+}
+.modelsTab .editorAlt {
+  display: flex;
+}
+.modelsTab .editorAlt div {
+  margin: auto;
+  opacity: 0.7;
+}
+.modelsTab .jsonEditor.hidden,
+.modelsTab .editorAlt.hidden {
+  display: none;
+}
+json-view {
+  display: block;
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
 .ai-chat-wrapper {
   display: flex;
   flex-direction: column;
