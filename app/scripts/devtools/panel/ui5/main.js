@@ -1,5 +1,6 @@
 
 (function () {
+    /* jshint maxstatements: 70 */
     'use strict';
 
     // ================================================================================
@@ -23,6 +24,8 @@
     var XMLDetailView = require('../../../modules/ui/XMLDetailView.js');
     var ControllerDetailView = require('../../../modules/ui/ControllerDetailView.js');
     var OElementsRegistryMasterView = require('../../../modules/ui/OElementsRegistryMasterView.js');
+    var ModelsMasterView = require('../../../modules/ui/ModelsMasterView.js');
+    var JSONDetailView = require('../../../modules/ui/JSONDetailView.js');
     var AIChat = require('../../../modules/ui/AIChat.js');
 
 
@@ -398,6 +401,86 @@
         }
     }, sharedDataViewOptions));
 
+    // Bootstrap for 'Models' tab
+    // ================================================================================
+    new Splitter('models-splitter', {
+        endContainerWidth: '50%'
+    });
+    new TabBar('models-tabbar');
+
+    /**
+     * Ask the page for the contents below one truncation marker.
+     * @param {string} sExpandId
+     * @param {boolean} bDeep - whether to open the whole branch
+     */
+    function requestModelExpansion(sExpandId, bDeep) {
+        port.postMessage({
+            action: 'do-model-expand',
+            target: sExpandId,
+            deep: bDeep,
+            frameId: framesSelect.getSelectedId()
+        });
+    }
+
+    var modelsInfo = new DataView('models-info');
+    var modelsData = new JSONDetailView('models-data', {
+        emptyMessage: 'Select a model to see its data',
+        ariaLabel: 'Model data',
+        onExpand: requestModelExpansion
+    });
+    var modelsMetadata = new JSONDetailView('models-metadata', {
+        emptyMessage: 'This model has no service metadata',
+        ariaLabel: 'Model service metadata',
+        onExpand: requestModelExpansion
+    });
+
+    function clearModelDetails() {
+        modelsInfo.setData({});
+        modelsData.clear();
+        modelsMetadata.clear();
+    }
+
+    var modelsMasterView = new ModelsMasterView('models-tab-master', {
+        /**
+         * Ask the page for data and metadata of the selected model.
+         * @param {string} sModelId
+         */
+        onSelectItem: function (sModelId) {
+            port.postMessage({
+                action: 'do-model-select',
+                target: sModelId,
+                frameId: framesSelect.getSelectedId()
+            });
+        },
+
+        /**
+         * Reveal the owner of a model in the Control Inspector.
+         * @param {string} sNavigationId
+         */
+        onNavigateToOwner: function (sNavigationId) {
+            var sPreviousTab = UI5TabBar.getActiveTab();
+
+            UI5TabBar.setActiveTab('control-tree-tab');
+
+            // The control tree only holds rendered controls, so an owner such as a
+            // dialog that was never opened is not in it.
+            if (!controlTree.setSelectedElement(sNavigationId)) {
+                UI5TabBar.setActiveTab(sPreviousTab);
+            }
+        },
+
+        /**
+         * Rescan the inspected page for models.
+         */
+        onRefreshButtonClicked: function () {
+            clearModelDetails();
+            port.postMessage({
+                action: 'do-models-refresh',
+                frameId: framesSelect.getSelectedId()
+            });
+        }
+    });
+
     function _getMergedControlTree(frameId) {
         var fd = frameData[frameId];
         if (!fd) {
@@ -438,6 +521,8 @@
             UI5Data.selectedElementId && controlTree.setSelectedElement(UI5Data.selectedElementId);
             appInfo.setData(UI5Data.applicationInformation);
             UI5Data.elementRegistry && oElementsRegistryMasterView.setData(UI5Data.elementRegistry);
+            modelsMasterView.setData(UI5Data.models);
+            clearModelDetails();
 
             controlProperties.setData(UI5Data.controlProperties || {});
             controlBindingInfoLeftDataView.setData(UI5Data.controlBindings || {});
@@ -594,6 +679,7 @@
             frameData[frameId].controlTreeUI5 = message.controlTree;
             frameData[frameId].applicationInformation = message.applicationInformation;
             frameData[frameId].elementRegistry = message.elementRegistry;
+            frameData[frameId].models = message.models;
 
             if (framesSelect.getSelectedId() === frameId) {
                 controlTree.setData(_getMergedControlTree(frameId));
@@ -602,6 +688,67 @@
                 aiChat.setUrl(frameData[frameId].url);
                 appInfo.setData(message.applicationInformation);
                 oElementsRegistryMasterView.setData(message.elementRegistry);
+                modelsMasterView.setData(message.models);
+                clearModelDetails();
+            }
+        },
+
+        /**
+         * Show the result of a model rescan.
+         * @param {Object} message
+         */
+        'on-receiving-models': function (message, messageSender) {
+            var frameId = messageSender.frameId;
+
+            if (!frameData[frameId]) {
+                return;
+            }
+
+            frameData[frameId].models = message.models;
+
+            if (framesSelect.getSelectedId() === frameId) {
+                modelsMasterView.setData(message.models);
+            }
+        },
+
+        /**
+         * Show data, metadata and details of the selected model.
+         * @param {Object} message
+         */
+        'on-model-select': function (message, messageSender) {
+            if (framesSelect.getSelectedId() !== messageSender.frameId) {
+                return;
+            }
+
+            if (message.modelMissing) {
+                // The list is older than the page: the model was destroyed, or the app
+                // navigated away since the scan.
+                var goneMessage = 'This model no longer exists on the page. Refresh the list.';
+
+                modelsInfo.setData({});
+                modelsData.update(undefined, goneMessage);
+                modelsMetadata.update(undefined, goneMessage);
+                return;
+            }
+
+            modelsInfo.setData(message.modelInfo || {});
+            modelsData.update(message.modelData, 'This model exposes no readable data');
+            modelsMetadata.update(message.modelMetadata);
+        },
+
+        /**
+         * Fill in the contents below a truncation marker the user opened.
+         * @param {Object} message
+         * @param {Object} messageSender
+         */
+        'on-model-expand': function (message, messageSender) {
+            if (framesSelect.getSelectedId() !== messageSender.frameId) {
+                return;
+            }
+
+            // The marker sits in whichever of the two panes rendered it.
+            if (!modelsData.applyExpansion(message.expandId, message.expandValue)) {
+                modelsMetadata.applyExpansion(message.expandId, message.expandValue);
             }
         },
 
