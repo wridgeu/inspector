@@ -1,0 +1,125 @@
+models-master-view {
+    display: flex;
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+
+    #modelsContent {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 0;
+        flex-wrap: nowrap;
+    }
+
+    [is="ui-icon"] { display: inline-block; flex-shrink: 0; }
+    [is="ui-icon"].icon-mask { background-color: rgb(110, 110, 110); -webkit-mask-position: var(--spritesheet-position); }
+    [is="ui-icon"]:not(.icon-mask) { background-position: var(--spritesheet-position); }
+    .spritesheet-largeicons.icon-mask { -webkit-mask-image: url("/images/largeIcons.svg"); }
+
+    #modelsRefresh {
+        display: flex;
+        flex-shrink: 0;
+        padding: 0;
+        border: 0;
+        background: none;
+        cursor: pointer;
+    }
+
+    filter {
+        border-bottom: solid 1px @border-grey-light;
+        display: flex;
+        left: 0;
+        line-height: 1;
+        padding: 5px;
+        align-items: center;
+    }
+
+    filter > start {
+        display: flex;
+        flex: 1 1 0;
+    }
+
+    filter [type="search"] {
+        border: solid 1px @border-gray-dark;
+        border-radius: 2px;
+        background-color: @bg-search-field;
+        color: @text-color;
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+
+    filter [type="checkbox"] {
+        margin-right: 2px;
+    }
+
+    filter label {
+        display: flex;
+        line-height: 20px;
+        padding: 0 6px;
+        white-space: nowrap;
+        align-items: center;
+    }
+}
+
+// Deliberately more specific than the striped row rule and less specific than the
+// DataGrid selection rule, so a selected row that also matches keeps the selection colour.
+models-master-view:not([show-filtered-elements]) .data-grid tr.revealed.matching {
+    background-color: @bg-highlight-color;
+}
+
+.modelsTab {
+    flex-direction: column;
+    background-color: @bg-datagrid;
+    color: @text-color;
+
+    splitter {
+        background-color: @bg-datagrid-header;
+    }
+
+    // Keep the pointer interaction ring-free without taking the ring away from the
+    // keyboard, which is the only way to move around the grid.
+    .data-grid:focus:not(:focus-visible) {
+        outline: none;
+    }
+
+    td.owner-column {
+        cursor: pointer;
+    }
+
+    #modelsContent .data-grid {
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+
+    .jsonEditor,
+    .editorAlt {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: auto;
+    }
+
+    .editorAlt {
+        display: flex;
+
+        div {
+            margin: auto;
+            opacity: 0.7;
+        }
+    }
+
+    // Scoped on purpose: a bare `.hidden` would also swallow the toolbar icons.
+    .jsonEditor.hidden,
+    .editorAlt.hidden {
+        display: none;
+    }
+}
+
+json-view {
+    display: block;
+    position: relative;
+    height: 100%;
+    width: 100%;
+}
